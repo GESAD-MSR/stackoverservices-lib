@@ -10,9 +10,6 @@
 # Notebooks
 notebooks/
 
-# Execution data
-data/
-
 # Pipfile
 Pipfile
 
