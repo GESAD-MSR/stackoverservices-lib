@@ -144,7 +144,7 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
     punctuation_rgx = r"[^()[\]<>+\-_=\*|\^{}$&%#@!?.,:;/\"]+"
 
     for index, row in questions_df.iterrows():
-
+        print(index)
         found_flag = False
 
         title = row.Title.lower()
@@ -155,7 +155,7 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
         
         clean_text = re.findall(punctuation_rgx, title)
         clean_text = [word for line in clean_text for word in line.split()]
-        clean_text = list(map(clean.remove_single_quotes, clean_text))
+        clean_text = list(map(clean.remove_quotation_marks, clean_text))
         
         simple_matched = simple_word_set.intersection(set(clean_text))
         in_title_simple = [True] * len(simple_matched)
@@ -172,7 +172,7 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
             
             clean_text = re.findall(punctuation_rgx, body)
             clean_text = [word for line in clean_text for word in line.split()]
-            clean_text = list(map(clean.remove_single_quotes, clean_text))
+            clean_text = list(map(clean.remove_quotation_marks, clean_text))
 
             simple_matched = simple_word_set.intersection(set(clean_text))
             in_body_simple = [True] * len(simple_matched)
@@ -196,7 +196,7 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
                         word for line in clean_text for word in line.split()]
                     
                     clean_text = list(
-                        map(clean.remove_single_quotes, clean_text))
+                        map(clean.remove_quotation_marks, clean_text))
 
                     simple_matched = simple_word_set.intersection(
                         set(clean_text))
@@ -301,7 +301,29 @@ def no_discussions_filter(questions_df, answers_df):
     valid_discussions = valid_discussions.fillna(0.0)
 
     return valid_discussions
+    
+# def no_discussions_filter(questions_df, answers_df):
+#     """
+    
+#     > Filter all questions in wich the only the owner posted answers
+#     @return: list of questions ids which are not discussions 
 
+#     """
+
+#     not_dscs = []
+
+#     for idx, question in questions_df.iterrows():
+#         answers = answers_df.loc[answers_df.ParentId == question.Id]
+#         print(idx)
+#         if len(answers.index) == 1:
+#             cond = answers.OwnerUserId.head(1) == question.OwnerUserId
+#             if cond.bool() is True:
+#                 not_dscs.append(question.Id)
+    
+#     valid_discussions = questions_df.loc[~questions_df.Id.isin(not_dscs)]
+#     valid_discussions = valid_discussions.fillna(0.0)
+
+#     return valid_discussions
 
 def tech_concpt_filter(questions_df, answers_df, tehcs_dict):
     """docstring"""
