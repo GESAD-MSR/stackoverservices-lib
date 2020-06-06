@@ -335,7 +335,7 @@ def tech_concpt_filter(questions_df, answers_df, tehcs_dict):
     compound_tech = list(map(lambda x: x.lower(), tehcs_dict["compound"]))
 
     # Word filtering
-    tech_ids, nontech_ids = do.filter_by_words(
+    tech_ids, nontech_ids = filter_by_words(
         questions_df, answers_df, simple_tech, compound_tech)
 
     tech_discussions = questions_df.loc[questions_df.Id.isin(tech_ids)]
