@@ -10,14 +10,17 @@ This module presents a series of functions to filter dataframes.
 # ============================== IMPORT SECTION ============================== #
 
 
-
 # Standart libs
 #
 from typing import Tuple
 
 # External libs
 #
-from pandas import DataFrame, Series
+# from pandas import DataFrame, Series
+from dask.dataframe.core import DataFrame, Series
+
+# Local libs
+#
 import re
 
 # Local libs
@@ -39,7 +42,7 @@ def filter_quantile_union(
     df: DataFrame,
     quantile: int,
     quantile_range: str = 'upper') -> Tuple[DataFrame, Series]:
-    
+
     """
     Get part of the data above or below a determined quantile
 
@@ -72,22 +75,28 @@ def filter_quantile_union(
     else:
         print("Invalid quantile")
         return
+
+    q = q.compute()
+    q2 = q.to_frame()
     
+    q2 = q2.transpose()
+    q2 = q2.reset_index()
+
     if quantile_range == 'upper':
         data = df.loc[
-           (df.AnswerCount > q.AnswerCount) |
-           (df.ViewCount > q.ViewCount) |
-           (df.CommentCount > q.CommentCount) |
-           (df.FavoriteCount > q.FavoriteCount) |
-           (df.Score > q.Score)
+            (df.AnswerCount > q2.AnswerCount) |
+            (df.ViewCount > q2.ViewCount) |
+            (df.CommentCount > q2.CommentCount) |
+            (df.FavoriteCount > q2.FavoriteCount) |
+            (df.Score > q2.Score)
         ]
     elif quantile_range == 'lower':
         data = df.loc[
-            (df.AnswerCount < q.AnswerCount) |
-            (df.ViewCount < q.ViewCount) |
-            (df.CommentCount < q.CommentCount) |
-            (df.FavoriteCount < q.FavoriteCount) |
-            (df.Score < q.Score)
+            (df.AnswerCount < q2.AnswerCount) |
+            (df.ViewCount < q2.ViewCount) |
+            (df.CommentCount < q2.CommentCount) |
+            (df.FavoriteCount < q2.FavoriteCount) |
+            (df.Score < q2.Score)
         ]
     else:
         #TODO raise an error here
@@ -112,21 +121,27 @@ def get_quantile_intersections(df, quantile, quantile_range='upper'):
         print("Invalid quantile")
         return
 
+    q = q.compute()
+    q2 = q.to_frame()
+    
+    q2 = q2.transpose()
+    q2 = q2.reset_index()
+
     if quantile_range == 'upper':
         data = df.loc[
-            (df.AnswerCount > q.AnswerCount) &
-            (df.ViewCount > q.ViewCount) &
-            (df.CommentCount > q.CommentCount) &
-            (df.FavoriteCount > q.FavoriteCount) &
-            (df.Score > q.Score)
+            (df.AnswerCount > q2.AnswerCount) &
+            (df.ViewCount > q2.ViewCount) &
+            (df.CommentCount > q2.CommentCount) &
+            (df.FavoriteCount > q2.FavoriteCount) &
+            (df.Score > q2.Score)
         ]
     elif quantile_range == 'lower':
         data = df.loc[
-            (df.AnswerCount < q.AnswerCount) &
-            (df.ViewCount < q.ViewCount) &
-            (df.CommentCount < q.CommentCount) &
-            (df.FavoriteCount < q.FavoriteCount) &
-            (df.Score < q.Score)
+            (df.AnswerCount < q2.AnswerCount) &
+            (df.ViewCount < q2.ViewCount) &
+            (df.CommentCount < q2.CommentCount) &
+            (df.FavoriteCount < q2.FavoriteCount) &
+            (df.Score < q2.Score)
         ]
     else:
         print('Ivalid range of data')
@@ -146,7 +161,9 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
     punctuation_rgx = r"[^()[\]<>+\-_=\*|\^{}$&%#@!?.,:;/\"]+"
 
     for index, row in questions_df.iterrows():
+
         print(index)
+
         found_flag = False
 
         title = row.Title.lower()
@@ -160,6 +177,7 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
         converters_text = list(map(converters.remove_quotation_marks, converters_text))
         
         simple_matched = simple_word_set.intersection(set(converters_text))
+
         in_title_simple = [True] * len(simple_matched)
         in_title = in_title_compound + in_title_simple
 
@@ -172,11 +190,13 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
                 True if re.compile(compound_word).search(body) else False 
                     for compound_word in compound_words]
             
+
             converters_text = re.findall(punctuation_rgx, body)
             converters_text = [word for line in converters_text for word in line.split()]
             converters_text = list(map(converters.remove_quotation_marks, converters_text))
 
             simple_matched = simple_word_set.intersection(set(converters_text))
+
             in_body_simple = [True] * len(simple_matched)
             in_body = in_body_compound + in_body_simple
 
@@ -202,6 +222,7 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
 
                     simple_matched = simple_word_set.intersection(
                         set(converters_text))
+
                     in_answers_simple = [True] * len(simple_matched)
                     in_answers = in_answers_compound + in_answers_simple
 
@@ -303,7 +324,7 @@ def no_discussions_filter(questions_df, answers_df):
     valid_discussions = valid_discussions.fillna(0.0)
 
     return valid_discussions
-    
+
 # def no_discussions_filter(questions_df, answers_df):
 #     """
     
@@ -335,7 +356,9 @@ def tech_concpt_filter(questions_df, answers_df, tehcs_dict):
     compound_tech = list(map(lambda x: x.lower(), tehcs_dict["compound"]))
 
     # Word filtering
+
     tech_ids, nontech_ids = filter_by_words(
+
         questions_df, answers_df, simple_tech, compound_tech)
 
     tech_discussions = questions_df.loc[questions_df.Id.isin(tech_ids)]
