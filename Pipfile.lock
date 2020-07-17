@@ -1,11 +1,13 @@
 {
     "_meta": {
         "hash": {
+
             "sha256": "b72e05a89f0b8ef511e1342837876d61190085ac951857053df0487fb4beb911"
         },
         "pipfile-spec": 6,
         "requires": {
             "python_version": "3.7"
+
         },
         "sources": [
             {
@@ -15,6 +17,7 @@
             }
         ]
     },
+
     "default": {
         "beautifulsoup4": {
             "hashes": [
@@ -310,5 +313,5 @@
             "version": "==3.1.0"
         }
     },
-    "develop": {}
+    "default": {},
 }

@@ -21,6 +21,11 @@ from dask.dataframe.core import DataFrame, Series
 
 # Local libs
 #
+import re
+
+# Local libs
+#
+from stackoverservices.data.text import converters
 
 __author__ = "Alan Bandeira"
 __license__ = "MIT"
@@ -37,6 +42,7 @@ def filter_quantile_union(
     df: DataFrame,
     quantile: int,
     quantile_range: str = 'upper') -> Tuple[DataFrame, Series]:
+
     """
     Get part of the data above or below a determined quantile
 
@@ -69,6 +75,7 @@ def filter_quantile_union(
     else:
         print("Invalid quantile")
         return
+
     q = q.compute()
     q2 = q.to_frame()
     
@@ -113,6 +120,7 @@ def get_quantile_intersections(df, quantile, quantile_range='upper'):
     else:
         print("Invalid quantile")
         return
+
     q = q.compute()
     q2 = q.to_frame()
     
@@ -154,6 +162,8 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
 
     for index, row in questions_df.iterrows():
 
+        print(index)
+
         found_flag = False
 
         title = row.Title.lower()
@@ -162,11 +172,12 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
             True if re.compile(compound_word).search(title) else False 
             for compound_word in compound_words]
         
-        clean_text = re.findall(punctuation_rgx, title)
-        clean_text = [word for line in clean_text for word in line.split()]
-        clean_text = list(map(clean.remove_single_quotes, clean_text))
+        converters_text = re.findall(punctuation_rgx, title)
+        converters_text = [word for line in converters_text for word in line.split()]
+        converters_text = list(map(converters.remove_quotation_marks, converters_text))
         
-        simple_matched = simple_word_set.intersection(set(clean_text))
+        simple_matched = simple_word_set.intersection(set(converters_text))
+
         in_title_simple = [True] * len(simple_matched)
         in_title = in_title_compound + in_title_simple
 
@@ -179,11 +190,13 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
                 True if re.compile(compound_word).search(body) else False 
                     for compound_word in compound_words]
             
-            clean_text = re.findall(punctuation_rgx, body)
-            clean_text = [word for line in clean_text for word in line.split()]
-            clean_text = list(map(clean.remove_single_quotes, clean_text))
 
-            simple_matched = simple_word_set.intersection(set(clean_text))
+            converters_text = re.findall(punctuation_rgx, body)
+            converters_text = [word for line in converters_text for word in line.split()]
+            converters_text = list(map(converters.remove_quotation_marks, converters_text))
+
+            simple_matched = simple_word_set.intersection(set(converters_text))
+
             in_body_simple = [True] * len(simple_matched)
             in_body = in_body_compound + in_body_simple
 
@@ -200,15 +213,16 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
                         True if re.compile(compound_word).search(answer) else
                         False for compound_word in compound_words]
                     
-                    clean_text = re.findall(punctuation_rgx, answer)
-                    clean_text = [
-                        word for line in clean_text for word in line.split()]
+                    converters_text = re.findall(punctuation_rgx, answer)
+                    converters_text = [
+                        word for line in converters_text for word in line.split()]
                     
-                    clean_text = list(
-                        map(clean.remove_single_quotes, clean_text))
+                    converters_text = list(
+                        map(converters.remove_quotation_marks, converters_text))
 
                     simple_matched = simple_word_set.intersection(
-                        set(clean_text))
+                        set(converters_text))
+
                     in_answers_simple = [True] * len(simple_matched)
                     in_answers = in_answers_compound + in_answers_simple
 
@@ -311,6 +325,28 @@ def no_discussions_filter(questions_df, answers_df):
 
     return valid_discussions
 
+# def no_discussions_filter(questions_df, answers_df):
+#     """
+    
+#     > Filter all questions in wich the only the owner posted answers
+#     @return: list of questions ids which are not discussions 
+
+#     """
+
+#     not_dscs = []
+
+#     for idx, question in questions_df.iterrows():
+#         answers = answers_df.loc[answers_df.ParentId == question.Id]
+#         print(idx)
+#         if len(answers.index) == 1:
+#             cond = answers.OwnerUserId.head(1) == question.OwnerUserId
+#             if cond.bool() is True:
+#                 not_dscs.append(question.Id)
+    
+#     valid_discussions = questions_df.loc[~questions_df.Id.isin(not_dscs)]
+#     valid_discussions = valid_discussions.fillna(0.0)
+
+#     return valid_discussions
 
 def tech_concpt_filter(questions_df, answers_df, tehcs_dict):
     """docstring"""
@@ -320,7 +356,9 @@ def tech_concpt_filter(questions_df, answers_df, tehcs_dict):
     compound_tech = list(map(lambda x: x.lower(), tehcs_dict["compound"]))
 
     # Word filtering
-    tech_ids, nontech_ids = do.filter_by_words(
+
+    tech_ids, nontech_ids = filter_by_words(
+
         questions_df, answers_df, simple_tech, compound_tech)
 
     tech_discussions = questions_df.loc[questions_df.Id.isin(tech_ids)]

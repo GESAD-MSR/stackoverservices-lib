@@ -108,7 +108,8 @@ def remove_quotation_marks(text: str) -> str:
         re.sub(r"[\'´`’\"]+", " ", text.lower()).split())
 
 
-def remove_punctuation(text):
+def remove_punctuation(text: str) -> str:
+
     """Remove the punctuation characters from a given text,
     based on a regular expression
 
