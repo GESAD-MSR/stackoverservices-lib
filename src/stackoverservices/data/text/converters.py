@@ -46,7 +46,7 @@ def lemmatization(nlp: English, text: str) -> str:
         An instance of spacy english language model en_core_web_sm,
         created as follows.
             'nlp = spacy.load('en_core_web_sm')'
-    
+
     text : string
         The text that should be lemmatized
 
@@ -58,7 +58,7 @@ def lemmatization(nlp: English, text: str) -> str:
     """
 
     processed_text = nlp(text)
-    
+
     lemmatized_text = " ".join(
         [word.lemma_ for word in processed_text
          if word.lemma_ != "-PRON-" and word.lemma_ != "'s"]
@@ -74,7 +74,7 @@ def remove_stopwords(stop_words: Set, text: str) -> str:
     ----------
     stop_words : Set
         The set of words that should be removed
-    
+
     text : string
         The text in which from the stop_words will be removed
 
@@ -83,7 +83,7 @@ def remove_stopwords(stop_words: Set, text: str) -> str:
     string
         A text analogous to the input text, not including stopwords
     """
-    
+
     text = text.split()
     words_to_remove = stop_words.intersection(set(text))
     cleaned_list = [word for word in text if word not in words_to_remove]
@@ -109,7 +109,6 @@ def remove_quotation_marks(text: str) -> str:
 
 
 def remove_punctuation(text: str) -> str:
-
     """Remove the punctuation characters from a given text,
     based on a regular expression
 
@@ -130,7 +129,7 @@ def remove_punctuation(text: str) -> str:
 
 def remove_numeric_digits(text: str) -> str:
     """Remove numeric characters using regex
-    
+
     Parameters
     ----------
     text : string
@@ -149,7 +148,7 @@ def remove_numeric_digits(text: str) -> str:
 def remove_special_characters(text: str) -> str:
     """
     Remove specific characters related to digital written language using regex
-    
+
     Parameters
     ----------
     text : string
@@ -197,14 +196,14 @@ def html_extraction(text: str) -> str:
     return " ".join(soup.text.split())
 
 
-#TODO Adapt plus ultra function
-def plus_ultra (df, my_stop_words, nlp):
+# TODO Adapt plus ultra function
+def plus_ultra(df, my_stop_words, nlp):
     stop_words_remover = partial(remove_stopwords, my_stop_words)
 
     lemmatizator = partial(lemmatization, nlp)
 
     df = list(map(remove_numeric_digits, df))
-        
+
     df = list(map(remove_special_characters, df))
 
     # print("lemmatization start")
