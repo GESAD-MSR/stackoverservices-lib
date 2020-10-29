@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "stackoverservices"
+version = "0.1.0"
+description = "A library for Stack Overflow data analysis"
+authors = ["Alan Bandeira <alan.p.bandeira@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+numpy = "^1.19.2"
+pandas = "^1.1.3"
+openpyxl = "^3.0.5"
+dash = "^1.16.3"
+spacy = "^2.3.2"
+beautifulsoup4 = "^4.9.3"
+
+[tool.poetry.dev-dependencies]
+autopep8 = "^1.5.4"
+pytest = "^6.1.1"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
