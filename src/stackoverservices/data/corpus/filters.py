@@ -50,7 +50,7 @@ def filter_quantile_union(
     ----------
     df : DataFrame
         The dataframe from which the distribution should be estimated
-    
+
     quantile : integer
         The distribution section to be used as threshold
 
@@ -78,7 +78,6 @@ def filter_quantile_union(
 
     q = q.compute()
     q2 = q.to_frame()
-    
     q2 = q2.transpose()
     q2 = q2.reset_index()
 
@@ -123,7 +122,6 @@ def get_quantile_intersections(df, quantile, quantile_range='upper'):
 
     q = q.compute()
     q2 = q.to_frame()
-    
     q2 = q2.transpose()
     q2 = q2.reset_index()
 
@@ -169,13 +167,13 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
         title = row.Title.lower()
 
         in_title_compound = [
-            True if re.compile(compound_word).search(title) else False 
-            for compound_word in compound_words]
-        
+            True if re.compile(compound_word).search(title) else False
+            for compound_word in compound_words
+
         converters_text = re.findall(punctuation_rgx, title)
         converters_text = [word for line in converters_text for word in line.split()]
         converters_text = list(map(converters.remove_quotation_marks, converters_text))
-        
+
         simple_matched = simple_word_set.intersection(set(converters_text))
 
         in_title_simple = [True] * len(simple_matched)
@@ -187,13 +185,14 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
             body = row.Body.lower()
 
             in_body_compound = [
-                True if re.compile(compound_word).search(body) else False 
+                True if re.compile(compound_word).search(body) else False
                     for compound_word in compound_words]
-            
 
             converters_text = re.findall(punctuation_rgx, body)
-            converters_text = [word for line in converters_text for word in line.split()]
-            converters_text = list(map(converters.remove_quotation_marks, converters_text))
+            converters_text = [
+                word for line in converters_text for word in line.split()]
+            converters_text = list(map(
+                converters.remove_quotation_marks, converters_text))
 
             simple_matched = simple_word_set.intersection(set(converters_text))
 
@@ -206,17 +205,18 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
                 answers = answers_df.loc[answers_df.ParentId == row.Id]
 
                 for idx, line in answers.iterrows():
-                    
                     answer = line.Body.lower()
 
                     in_answers_compound = [
                         True if re.compile(compound_word).search(answer) else
                         False for compound_word in compound_words]
-                    
+
                     converters_text = re.findall(punctuation_rgx, answer)
                     converters_text = [
-                        word for line in converters_text for word in line.split()]
-                    
+                        word for line in converters_text
+                        for word in line.split()
+                    ]
+
                     converters_text = list(
                         map(converters.remove_quotation_marks, converters_text))
 
@@ -229,18 +229,18 @@ def filter_by_words(questions_df, answers_df, simple_words, compound_words):
                     if any(in_answers):
                         found_flag = True
                         break
-        
+
         if found_flag:
             matched_ids.append(row.Id)
         else:
             not_matched_ids.append(row.Id)
-        
+
     return matched_ids, not_matched_ids
 
 
 def relevance_filter(questions_df, quantile, output=None, metric="union"):
     """
-    
+
     Filter a questions dataframe using stackoverflow metrics based on boxplot 
     quartiles.
 
@@ -250,24 +250,24 @@ def relevance_filter(questions_df, quantile, output=None, metric="union"):
 
     :param quartile
         > Integer indicating distribution thershold;
-    
+
     :param output
         > File path to write results, default value is None;
 
     :param metric
         > Data selecting metric, following the available methods inside
         data_manager package. Currently union and intersection are available.
-            
+
     :return (tuple):
         > Dataframe of relevant discussions;
-    
+
     """
 
     if metric is "union":
         relevant, q = dm.get_quantile_union(questions_df, quantile)
     else:
         relevant, q = dm.get_quantile_intersections(questions_df, quantile)
-    
+
     if output:
         to_persist = relevant.set_index('Id')
         to_persist.to_csv(output)
@@ -277,26 +277,26 @@ def relevance_filter(questions_df, quantile, output=None, metric="union"):
 
 def non_related_filter(questions_df, non_related_ids):
     """
-    
-    Splits a questions dataframe between related and non-related discussions, 
+
+    Splits a questions dataframe between related and non-related discussions,
     based on an Ids list of non-related discussions.
 
     :param questions_df:
         > A pandas dataframe of stackoverflow questions containing posts Ids;
 
     :param non_related_ids:
-        > List like object containing Ids of manually filtered non-related 
+        > List like object containing Ids of manually filtered non-related
         stack overflow discussions;
-            
+
     :return (tuple):
-        > Two dataframes, one with related discussions and another with 
+        > Two dataframes, one with related discussions and another with
         non-related discussions
-    
+
     """
 
     non_related = questions_df.loc[questions_df.Id.isin(non_related_ids)]
     non_related = non_related.fillna(0.0)
-    
+
     related = questions_df.loc[~questions_df.Id.isin(non_related_ids)]
     related = related.fillna(0.0)
 
@@ -305,9 +305,9 @@ def non_related_filter(questions_df, non_related_ids):
 
 def no_discussions_filter(questions_df, answers_df):
     """
-    
+
     > Filter all questions in wich the only the owner posted answers
-    @return: list of questions ids which are not discussions 
+    @return: list of questions ids which are not discussions
 
     """
 
@@ -319,7 +319,7 @@ def no_discussions_filter(questions_df, answers_df):
         if len(answers.index) == 1:
             if answers.iloc[0].OwnerUserId == question.OwnerUserId:
                 not_dscs.append(question.Id)
-    
+
     valid_discussions = questions_df.loc[~questions_df.Id.isin(not_dscs)]
     valid_discussions = valid_discussions.fillna(0.0)
 
@@ -327,7 +327,7 @@ def no_discussions_filter(questions_df, answers_df):
 
 # def no_discussions_filter(questions_df, answers_df):
 #     """
-    
+
 #     > Filter all questions in wich the only the owner posted answers
 #     @return: list of questions ids which are not discussions 
 
@@ -342,7 +342,7 @@ def no_discussions_filter(questions_df, answers_df):
 #             cond = answers.OwnerUserId.head(1) == question.OwnerUserId
 #             if cond.bool() is True:
 #                 not_dscs.append(question.Id)
-    
+
 #     valid_discussions = questions_df.loc[~questions_df.Id.isin(not_dscs)]
 #     valid_discussions = valid_discussions.fillna(0.0)
 
@@ -350,7 +350,7 @@ def no_discussions_filter(questions_df, answers_df):
 
 def tech_concpt_filter(questions_df, answers_df, tehcs_dict):
     """docstring"""
-    
+
     # Transform tech lists text itens to lower case to assure consistency
     simple_tech = list(map(lambda x: x.lower(), tehcs_dict["simple"]))
     compound_tech = list(map(lambda x: x.lower(), tehcs_dict["compound"]))
