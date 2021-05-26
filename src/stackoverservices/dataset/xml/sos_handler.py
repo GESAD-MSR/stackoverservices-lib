@@ -14,15 +14,13 @@ This module presents a class for handling stackoverflow XML dataset
 #
 import xml.sax
 from xml.sax import ContentHandler
-#  from xml.parsers.expat import ExpatError
-#  from xml.sax._exceptions import SAXParseException
 
 # External libs
 #
+from pandas import DataFrame
 
 # Local libs
 #
-
 
 __author__ = "Alan Bandeira"
 __license__ = "MIT"
@@ -36,39 +34,42 @@ __status__ = "Development"
 
 
 class SOSHandler(ContentHandler):
-    def __init__(self):
-        self.current_element = ""
-        self.id = None
-        self.parent_id = None
-        self.title = ""
-        self.tags = []
-        self.body = ""
-        self.comment_count = None
-        self.view_count = None
-        self.answer_count = None
-        self.favorite_count = None
-        self.score = None
+    def __init__(self, output_file: str):
+        self.posts_count = 0
+        self.header = True
+        self.posts = DataFrame()
+        self.output_file = output_file
 
-    def startElement(self, tag, attributes):
-        print(str(dict(attributes)))
+    def startElement(self, tag: str, attributes: dict):
+        """docstring"""
 
-    def endElement(self, tag):
-        pass
+        if attributes:
 
-    def characters(self, content):
-        pass
-        #  try:
-        #      print(content)
-        #  except ExpatError:
-        #      print('aaaahhhhhh', content)
+            self.posts = self.posts.append(attributes)
+            self.posts_count += 1
 
-    def endDocument(self):
-        pass
+            if self.posts_count % 1000 == 0:
+
+                if self.header:
+                    self.posts.columns = list(attributes.keys())
+
+                self.write_posts_chunk()
+
+                self.header = False
+
+    def write_posts_chunk(self):
+        """docstring"""
+        self.posts.to_csv(
+            self.output_file,
+            header=self.header,
+            mode='a'
+        )
 
 
 if __name__ == "__main__":
+    # TODO Test with SO sample
 
-    handler = SOSHandler()
+    handler = SOSHandler('')
 
     parser = xml.sax.make_parser()
     parser.setFeature(xml.sax.handler.feature_namespaces, 0)
