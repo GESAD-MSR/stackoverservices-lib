@@ -6,25 +6,21 @@ authors = ["Alan Bandeira <alan.p.bandeira@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 numpy = "^1.19.2"
 pandas = "^1.1.3"
 openpyxl = "^3.0.5"
 dash = "^1.16.3"
 beautifulsoup4 = "^4.9.3"
 dask = {extras = ["complete"], version = "^2021.4.0"}
-pylint = "^2.7.4"
 spacy = "^3.0.6"
-pynvim = "^0.4.3"
+flake8 = "^3.9.2"
 
 [tool.poetry.dev-dependencies]
-autopep8 = "^1.5.4"
 pytest = "^6.1.1"
-jedi = "^0.18.0"
-pynvim = "^0.4.3"
-pylint = "^2.7.4"
-flake8 = "^3.9.2"
+autopep8 = "^1.5.7"
 jupyter = "^1.0.0"
+mypy = "^0.812"
 
 [build-system]
 requires = ["poetry>=0.12"]

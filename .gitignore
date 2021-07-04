@@ -1,3 +1,12 @@
+# Pytest resources
+/tests/resources/
+
+
+
+# Nvim
+Session.vim
+.vim
+
 # sublime
 .sublime-project.sublime-workspace
 
