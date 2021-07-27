@@ -1,8 +1,6 @@
 # Pytest resources
 /tests/resources/
 
-
-
 # Nvim
 Session.vim
 .vim

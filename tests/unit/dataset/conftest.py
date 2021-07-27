@@ -1,16 +1,27 @@
+import os
 import pytest
+
+from pathlib import Path
 
 
 @pytest.fixture
-def xml_input() -> str:
+def xml_input(test_root) -> str:
     """Fixture for configuring the input data for testing handlers
 
 
     :returns: The path to the xml test input.
     """
 
-    return ("/mnt/c/Users/alanp/Devspace/GESAD/stackoverservices-lib/tests/"
-            "resources/sample.xml")
+    #TODO: SET TEST PATHS IN A FIXTURE IN ROOT CONFTEST
+    #TODO: TRY TO PASS FIXTURE TO ANOTHER FIXTURE
+
+
+    # test_folder_path = os.path.abspath(".")
+
+    # test_folder = Path(test_folder_path)
+
+    # return test_folder / "resources/sample.xml"
+    return test_root / "resources/sample.xml"
 
 
 @pytest.fixture
